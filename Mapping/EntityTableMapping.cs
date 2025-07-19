@@ -14,7 +14,8 @@ namespace DataEntitiesMapping
         protected readonly string[] _properties;
         /// <summary>Массив имён полей таблицы</summary>
         protected readonly string[] _fields;
-        /// <summary>Сведения о конфигурации сопоставления в формате XML</summary>
+        /// <summary>Сведения о конфигурации сопоставления в формате XML
+        /// </summary>
         protected XContainer _table_config;
 
         /// <summary>Имя таблицы</summary>
@@ -30,14 +31,14 @@ namespace DataEntitiesMapping
         {
             get
             {
-                string field;
-                TryGetField(property, out field);
+                TryGetField(property, out string field);
                 return field;
             }
         }
 
         /// <summary>Конструктор</summary>
-        /// <param name="config_node">Исходные сведения о конфигурации сопоставления в формате XML</param>
+        /// <param name="config_node">Исходные сведения
+        /// о конфигурации сопоставления в формате XML</param>
         public EntityTableMapping(XElement config_node)
         {
             _name = Convert.ToString(config_node.Name);
@@ -53,7 +54,8 @@ namespace DataEntitiesMapping
                 {
                     if (property_config != null)
                     {
-                        _properties[i] = Convert.ToString(property_config.Name);
+                        _properties[i] = Convert
+                                         .ToString(property_config.Name);
                         _fields[i] = property_config.Value;
                     }
 
@@ -62,18 +64,22 @@ namespace DataEntitiesMapping
             }
         }
 
-        /// <summary>Получение имени поля таблицы по имени свойства класса</summary>
+        /// <summary>Получение имени поля таблицы по имени свойства класса
+        /// </summary>
         /// <param name="property">Имя свойства класса</param>
         /// <param name="field">Имя поля таблицы</param>
-        /// <returns>true - поля найдено, false - соответствующее поле не найдено или не существует,
-        /// передан недопустимый аргумент или отсутствуют или не инициализированы исходные данные</returns>
+        /// <returns>true - поля найдено, false - соответствующее поле
+        /// не найдено или не существует, передан недопустимый аргумент
+        /// или отсутствуют или не инициализированы исходные данные</returns>
         public bool TryGetField(string property, out string field)
         {
             bool obtained = false;
             property = property.Trim();
             field = "";
 
-            if (Properties != null && Fields != null && !string.IsNullOrEmpty(property))
+            if (Properties != null &&
+                Fields != null &&
+                !string.IsNullOrEmpty(property))
             {
                 int target_index = 0;
 

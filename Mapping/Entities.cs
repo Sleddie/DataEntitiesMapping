@@ -5,7 +5,8 @@ using DataEntitiesMapping.Entity;
 
 namespace DataEntitiesMapping
 {
-    /// <summary>Класс-контейнер конфигурации сопоставления классов и таблиц</summary>
+    /// <summary>Класс-контейнер конфигурации сопоставления классов и таблиц
+    /// </summary>                                                                         
     public class Entities
     {
         /// <summary>XML-документ конфигурации</summary>
@@ -20,8 +21,7 @@ namespace DataEntitiesMapping
         {
             get
             {
-                EntityTables entity_configs;
-                TryGetEntityTables(entity, out entity_configs);
+                TryGetEntityTables(entity, out EntityTables entity_configs);
                 return entity_configs;
             }
         }
@@ -58,7 +58,8 @@ namespace DataEntitiesMapping
         /// указанного типа; в противном случае — false</returns>
         public bool TryGetEntityTables<EntityType>(out EntityTables entity_configs)
         {
-            return TryGetEntityTables(Entity<EntityType>.TypeName, out entity_configs);
+            return TryGetEntityTables(Entity<EntityType>.TypeName,
+                                      out entity_configs);
         }
 
         /// <summary>Получение сущности по типу данных</summary>
@@ -66,26 +67,30 @@ namespace DataEntitiesMapping
         /// <param name="entity_configs">Объект конфигурации сущности</param>
         /// <returns>true, если объект конфигурации содержит конфигурацию
         /// с указанным именем; в противном случае — false</returns>
-        public bool TryGetEntityTables(string entity, out EntityTables entity_configs)
+        public bool TryGetEntityTables(string entity,
+                                       out EntityTables entity_configs)
         {
-            return _entities_collection.TryGetValue(entity, out entity_configs);
+            return _entities_collection.TryGetValue(entity,
+                                                    out entity_configs);
         }
 
         #region Static
 
         /// <summary>Имя файла конфигурации по умолчанию</summary>
-        public const string DEFAULT_CONFIG_FILE_NAME = "DatabaseEntitiesMapping.config";
+        public const string DEFAULT_CONFIG_FILE_NAME = "DataEntitiesMapping.config";
 
         /// <summary>Получение конфигурации по умолчанию</summary>
         public static Entities Default { get { return new Entities(); } }
 
-        /// <summary>Получение коллекции сущностей из XML-документа конфигурации</summary>
-        /// <param name="entities_configs_file">XML-документ конфигурации</param>
+        /// <summary>Получение коллекции сущностей
+        /// из XML-документа конфигурации</summary>
+        /// <param name="entities_configs_file">XML-документ конфигурации
+        /// </param>
         /// <returns>Коллекция сущностей в виде SortedList</returns>
         public static SortedList<string, EntityTables> SetEntitiesCollection(XDocument entities_configs_file)
         {
             SortedList<string, EntityTables> configs_collection = null;
-            XElement source_root = entities_configs_file != null ? entities_configs_file.Root : null;
+            XElement source_root = entities_configs_file?.Root;
 
             if (source_root != null && source_root.HasElements)
             {
@@ -94,7 +99,8 @@ namespace DataEntitiesMapping
                 foreach (XElement config_source in source_root.Elements())
                 {
                     EntityTables table_config = new EntityTables(config_source);
-                    configs_collection.Add(table_config.Name, table_config);
+                    configs_collection.Add(table_config.Name,
+                                           table_config);
                 }
             }
 

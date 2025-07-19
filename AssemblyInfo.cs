@@ -28,4 +28,4 @@ using System.Runtime.InteropServices;
 //      Номер построения
 //      Редакция
 //
-[assembly: AssemblyVersion("1.3.1")]
+[assembly: AssemblyVersion("1.3.2")]

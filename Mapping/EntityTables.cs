@@ -4,14 +4,16 @@ using System.Xml.Linq;
 
 namespace DataEntitiesMapping
 {
-    /// <summary>Контейнерный класс с набором конфигураций сопоставления с таблицами базы данных</summary>
+    /// <summary>Контейнерный класс с набором конфигураций сопоставления
+    /// с таблицами базы данных</summary>
     public class EntityTables
     {
         /// <summary>Имя сущности</summary>
         protected string _name;
         /// <summary>Имя таблицы по умолчанию</summary>
         protected string _default_table;
-        /// <summary>Сведения о конфигурации сопоставления в формате XML</summary>
+        /// <summary>Сведения о конфигурации сопоставления в формате XML
+        /// </summary>
         protected XContainer _entity_config;
         /// <summary>Набор конфигураций сопоставления</summary>
         protected SortedList<string, EntityTableMapping> _tables_collection;
@@ -20,23 +22,29 @@ namespace DataEntitiesMapping
         public string Name { get { return _name; } }
         /// <summary>Имя таблицы по умолчанию</summary>
         public string DefaultTable { get { return _default_table; } }
-        /// <summary>Конфигурация сопоставления для таблицы по умолчанию</summary>
-        public EntityTableMapping DefaultTableMapping { get { return this[DefaultTable]; } }
+        /// <summary>Конфигурация сопоставления для таблицы по умолчанию
+        /// </summary>
+        public EntityTableMapping DefaultTableMapping
+        {
+            get { return this[DefaultTable]; }
+        }
         /// <summary>Конфигурация сопоставления по имени таблицы</summary>
         /// <param name="table">Имя таблицы</param>
-        /// <returns>Объект со сведениями о конфигурации сопоставления</returns>
+        /// <returns>Объект со сведениями о конфигурации сопоставления
+        /// </returns>
         public EntityTableMapping this[string table]
         {
             get
             {
-                EntityTableMapping table_mapping;
-                TryGetTableMapping(table, out table_mapping);
+                TryGetTableMapping(table,
+                                   out EntityTableMapping table_mapping);
                 return table_mapping;
             }
         }
 
         /// <summary>Конструктор</summary>
-        /// <param name="entity_configs">Исходные сведения о наборе конфигураций сопоставления в формате XML</param>
+        /// <param name="entity_configs">Исходные сведения о наборе
+        /// конфигураций сопоставления в формате XML</param>
         public EntityTables(XElement entity_configs)
         {
             _name = Convert.ToString(entity_configs.Name);
@@ -45,20 +53,35 @@ namespace DataEntitiesMapping
             _tables_collection = SetConfigsCollection(entity_configs);
         }
 
-        /// <summary>Получение конфигурации сопоставления по имени таблицы</summary>
+        /// <summary>Получение конфигурации сопоставления по имени таблицы
+        /// </summary>
         /// <param name="table">Имя таблицы</param>
-        /// <param name="table_mapping">Объект со сведениями о конфигурации сопоставления</param>
+        /// <param name="table_mapping">Объект со сведениями
+        /// о конфигурации сопоставления</param>
         /// <returns></returns>
-        public bool TryGetTableMapping(string table, out EntityTableMapping table_mapping) { return _tables_collection.TryGetValue(table, out table_mapping); }
-        /// <summary>Получение конфигурации сопоставления для таблицы по умолчанию</summary>
-        /// <param name="default_mapping">Объект со сведениями о конфигурации сопоставления</param>
+        public bool TryGetTableMapping(string table,
+                                       out EntityTableMapping table_mapping)
+        {
+            return _tables_collection.TryGetValue(table,
+                                                  out table_mapping);
+        }
+        /// <summary>Получение конфигурации сопоставления для таблицы
+        /// по умолчанию</summary>
+        /// <param name="default_mapping">Объект со сведениями
+        /// о конфигурации сопоставления</param>
         /// <returns></returns>
-        public bool TryGetDefaultTableMapping(out EntityTableMapping default_mapping) { return TryGetTableMapping(DefaultTable, out default_mapping); }
+        public bool TryGetDefaultTableMapping(out EntityTableMapping default_mapping)
+        {
+            return TryGetTableMapping(DefaultTable,
+                                      out default_mapping);
+        }
 
         #region Static
 
-        /// <summary>Получение имени таблицы по умолчанию из исходных данных</summary>
-        /// <param name="entity_configs">Исходные сведения о наборе конфигураций сопоставления в формате XML</param>
+        /// <summary>Получение имени таблицы по умолчанию из исходных данных
+        /// </summary>
+        /// <param name="entity_configs">Исходные сведения о наборе
+        /// конфигураций сопоставления в формате XML</param>
         /// <returns>Имя таблицы по умолчанию</returns>
         public static string SetDefaultTable(XElement entity_configs)
         {
@@ -73,8 +96,10 @@ namespace DataEntitiesMapping
             return default_table_name;
         }
 
-        /// <summary>Получение набора конфигураций сопоставления из исходных данных</summary>
-        /// <param name="configs_source">Исходные сведения о наборе конфигураций сопоставления в формате XML</param>
+        /// <summary>Получение набора конфигураций сопоставления
+        /// из исходных данных</summary>
+        /// <param name="configs_source">Исходные сведения о наборе
+        /// конфигураций сопоставления в формате XML</param>
         /// <returns>Набор конфигураций сопоставления</returns>
         public static SortedList<string, EntityTableMapping> SetConfigsCollection(XElement configs_source)
         {
@@ -82,12 +107,14 @@ namespace DataEntitiesMapping
 
             if (configs_source != null && configs_source.HasElements)
             {
-                configs_collection = new SortedList<string, EntityTableMapping>();
+                configs_collection = new SortedList<string,
+                                                    EntityTableMapping>();
 
                 foreach (XElement config_source in configs_source.Elements())
                 {
                     EntityTableMapping table_config = new EntityTableMapping(config_source);
-                    configs_collection.Add(table_config.Name, table_config);
+                    configs_collection.Add(table_config.Name,
+                                           table_config);
                 }
             }
 
