@@ -5,7 +5,10 @@
     public class Entity<Type>
     {
         /// <summary>Имя класса</summary>
-        public static string TypeName { get { return typeof(Type).Name; } }
+        public static string TypeName
+        {
+            get { return typeof(Type).Name; }
+        }
         /// <summary>Сведения о стандартной конфигурации соответствия
         /// </summary>
         public static EntityTables DefaultEntityConfigs

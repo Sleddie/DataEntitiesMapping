@@ -7,19 +7,19 @@ namespace DataEntitiesMapping
     {
         /// <summary>Получение значения по имени поля из указанной
         /// записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
         /// <returns>Значение ячейки как Object</returns>
-        public static object GetValue(DataRow data_record,
-                                      string field_name)
+        public static object GetValue(DataRow dataRecord,
+                                      string fieldName)
         {
             object target = null;
 
-            if (data_record != null &&
-                !string.IsNullOrEmpty(field_name.Trim()) &&
-                data_record.Table.Columns.Contains(field_name))
+            if (dataRecord != null &&
+                !string.IsNullOrEmpty(fieldName.Trim()) &&
+                dataRecord.Table.Columns.Contains(fieldName))
             {
-                target = data_record[field_name];
+                target = dataRecord[fieldName];
             }
 
             return target;
@@ -27,208 +27,225 @@ namespace DataEntitiesMapping
 
         /// <summary>Получение строкового значения по имени поля из указанной
         /// записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки как строка</returns>
-        public static string GetStringValue(DataRow data_record,
-                                            string field_name,
-                                            string default_value = "")
+        public static string GetStringValue(DataRow dataRecord,
+                                            string fieldName,
+                                            string defaultValue = "")
         {
-            string converted_value = default_value;
-            object obtained_value = GetValue(data_record,
-                                             field_name);
+            string convertedValue = defaultValue;
+            object obtainedValue = GetValue(
+                dataRecord,
+                fieldName);
 
-            if (!Convert.IsDBNull(obtained_value))
+            if (!Convert.IsDBNull(obtainedValue))
             {
-                converted_value = Convert.ToString(obtained_value);
+                convertedValue = Convert.ToString(obtainedValue);
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение целочисленного значения по имени поля
         /// из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки в виде целого числа</returns>
-        public static int GetIntegerValue(DataRow data_record,
-                                          string field_name,
-                                          int default_value = 0)
+        public static int GetIntegerValue(DataRow dataRecord,
+                                          string fieldName,
+                                          int defaultValue = 0)
         {
-            int converted_value = default_value;
-            int? obtained_value = GetIntegerNullableValue(data_record,
-                                                          field_name);
+            int convertedValue = defaultValue;
+            int? obtainedValue = GetIntegerNullableValue(
+                dataRecord,
+                fieldName);
 
-            if (obtained_value.HasValue)
+            if (obtainedValue.HasValue)
             {
-                converted_value = obtained_value.Value;
+                convertedValue = obtainedValue.Value;
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение целочисленного значения по имени поля
         /// из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки в виде целого числа</returns>
-        public static int? GetIntegerNullableValue(DataRow data_record,
-                                                   string field_name,
-                                                   int? default_value = null)
+        public static int? GetIntegerNullableValue(DataRow dataRecord,
+                                                   string fieldName,
+                                                   int? defaultValue = null)
         {
-            int? converted_value = default_value;
-            string obtained_string = GetStringValue(data_record,
-                                                    field_name);
+            int? convertedValue = defaultValue;
+            string obtainedString = GetStringValue(
+                dataRecord,
+                fieldName);
 
-            if (int.TryParse(obtained_string,
-                             out int try_parse_result))
+            if (int.TryParse(
+                obtainedString,
+                out int tryParseResult))
             {
-                converted_value = try_parse_result;
+                convertedValue = tryParseResult;
             }
             else
             {
-                decimal? decimal_value = GetDecimalNullableValue(data_record,
-                                                                 field_name);
+                decimal? decimalValue = GetDecimalNullableValue(
+                    dataRecord,
+                    fieldName);
 
-                if (decimal_value.HasValue)
+                if (decimalValue.HasValue)
                 {
-                    converted_value = (int)Math.Round(decimal_value.Value);
+                    convertedValue = (int)Math.Round(decimalValue.Value);
                 }
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение десятичного значения с плавающей точкой
         /// по имени поля из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки в виде десятичного числа
         /// с плавающей точкой</returns>
-        public static decimal GetDecimalValue(DataRow data_record,
-                                              string field_name,
-                                              decimal default_value = 0)
+        public static decimal GetDecimalValue(DataRow dataRecord,
+                                              string fieldName,
+                                              decimal defaultValue = 0)
         {
-            decimal converted_value = default_value;
-            decimal? obtained_value = GetDecimalNullableValue(data_record,
-                                                              field_name);
+            decimal convertedValue = defaultValue;
+            decimal? obtainedValue = GetDecimalNullableValue(
+                dataRecord,
+                fieldName);
 
-            if (obtained_value.HasValue)
+            if (obtainedValue.HasValue)
             {
-                converted_value = obtained_value.Value;
+                convertedValue = obtainedValue.Value;
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение десятичного значения с плавающей точкой
         /// по имени поля из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки в виде десятичного числа
         /// с плавающей точкой</returns>
-        public static decimal? GetDecimalNullableValue(DataRow data_record,
-                                                       string field_name,
-                                                       decimal? default_value = null)
+        public static decimal? GetDecimalNullableValue(
+            DataRow dataRecord,
+            string fieldName,
+            decimal? defaultValue = null)
         {
-            decimal? converted_value = default_value;
-            string obtained_string = GetStringValue(data_record,
-                                                    field_name);
+            decimal? convertedValue = defaultValue;
+            string obtainedString = GetStringValue(
+                dataRecord,
+                fieldName);
 
-            if (decimal.TryParse(obtained_string,
-                                 out decimal try_parse_result))
+            if (decimal.TryParse(
+                obtainedString,
+                out decimal tryParseResult))
             {
-                converted_value = try_parse_result;
+                convertedValue = tryParseResult;
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение булевого значения по имени поля из указанной
         /// записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
         /// <returns>Значение ячейки как true или false</returns>
-        public static bool GetBooleanValue(DataRow data_record,
-                                           string field_name)
+        public static bool GetBooleanValue(DataRow dataRecord,
+                                           string fieldName)
         {
-            string obtained_string = GetStringValue(data_record,
-                                                    field_name);
-            bool.TryParse(obtained_string,
-                          out bool converted_value);
-            return converted_value;
+            string obtainedString = GetStringValue(
+                dataRecord,
+                fieldName);
+            bool.TryParse(
+                obtainedString,
+                out bool convertedValue);
+            return convertedValue;
         }
 
         /// <summary>Получение значения в виде даты и времени по имени поля
         /// из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
         /// <returns>Значение ячейки как DateTime</returns>
-        public static DateTime GetDateTimeValue(DataRow data_record,
-                                                string field_name)
+        public static DateTime GetDateTimeValue(DataRow dataRecord,
+                                                string fieldName)
         {
-            string obtained_string = GetStringValue(data_record,
-                                                    field_name);
-            DateTime.TryParse(obtained_string,
-                              out DateTime converted_value);
-            return converted_value;
+            string obtainedString = GetStringValue(
+                dataRecord,
+                fieldName);
+            DateTime.TryParse(
+                obtainedString,
+                out DateTime convertedValue);
+            return convertedValue;
         }
 
         /// <summary>Получение значения в виде даты и времени по имени поля
         /// из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки как DateTime</returns>
-        public static DateTime GetDateTimeValue(DataRow data_record,
-                                                string field_name,
-                                                DateTime default_value)
+        public static DateTime GetDateTimeValue(DataRow dataRecord,
+                                                string fieldName,
+                                                DateTime defaultValue)
         {
-            DateTime converted_value = default_value;
-            DateTime? try_parse_result = GetDateTimeNullableValue(data_record,
-                                                                  field_name);
+            DateTime convertedValue = defaultValue;
+            DateTime? tryParseResult = GetDateTimeNullableValue(
+                dataRecord,
+                fieldName);
 
-            if (try_parse_result.HasValue)
+            if (tryParseResult.HasValue)
             {
-                converted_value = try_parse_result.Value;
+                convertedValue = tryParseResult.Value;
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Получение значения в виде даты и времени по имени поля
         /// из указанной записи таблицы</summary>
-        /// <param name="data_record">Запись таблицы данных</param>
-        /// <param name="field_name">Имя поля</param>
-        /// <param name="default_value">Значение по умолчанию для случая,
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки как DateTime</returns>
-        public static DateTime? GetDateTimeNullableValue(DataRow data_record,
-                                                         string field_name,
-                                                         DateTime? default_value = null)
+        public static DateTime? GetDateTimeNullableValue(
+            DataRow dataRecord,
+            string fieldName,
+            DateTime? defaultValue = null)
         {
-            DateTime? converted_value = default_value;
-            string obtained_string = GetStringValue(data_record,
-                                                    field_name);
+            DateTime? convertedValue = defaultValue;
+            string obtainedString = GetStringValue(
+                dataRecord,
+                fieldName);
 
-            if (DateTime.TryParse(obtained_string,
-                                  out DateTime try_parse_result))
+            if (DateTime.TryParse(
+                obtainedString,
+                out DateTime tryParseResult))
             {
-                converted_value = try_parse_result;
+                convertedValue = tryParseResult;
             }
 
-            return converted_value;
+            return convertedValue;
         }
 
         /// <summary>Приведение указанного значения указанного типа к строке,
@@ -240,56 +257,61 @@ namespace DataEntitiesMapping
         public static string GetSqlValue(object value,
                                          Type type)
         {
-            string converted_value = "null";
+            string convertedValue = "null";
 
-            if (value != null)
+            if (value == null)
             {
-                if (type.Equals(typeof(string)))
-                {
-                    converted_value = GetSqlValue(Convert.ToString(value));
-                }
-                else if (type.Equals(typeof(int)) ||
-                         type.Equals(typeof(int?)) ||
-                         type.Equals(typeof(uint)) ||
-                         type.Equals(typeof(uint?)) ||
-                         type.Equals(typeof(byte)) ||
-                         type.Equals(typeof(byte?)) ||
-                         type.Equals(typeof(sbyte)) ||
-                         type.Equals(typeof(sbyte?)) ||
-                         type.Equals(typeof(short)) ||
-                         type.Equals(typeof(short?)) ||
-                         type.Equals(typeof(ushort)) ||
-                         type.Equals(typeof(ushort?)) ||
-                         type.Equals(typeof(long)) ||
-                         type.Equals(typeof(long?)) ||
-                         type.Equals(typeof(ulong)) ||
-                         type.Equals(typeof(ulong?)))
-                {
-                    converted_value = GetSqlValue((int)Convert
-                                                  .ChangeType(value,
-                                                              typeof(int)));
-                }
-                else if (type.Equals(typeof(decimal)) ||
-                         type.Equals(typeof(decimal?)) ||
-                         type.Equals(typeof(float)) ||
-                         type.Equals(typeof(float?)) ||
-                         type.Equals(typeof(double)) ||
-                         type.Equals(typeof(double?)))
-                {
-                    converted_value = GetSqlValue((decimal)Convert
-                                                  .ChangeType(value,
-                                                              typeof(decimal)));
-                }
-                else if (type.Equals(typeof(DateTime)) ||
-                         type.Equals(typeof(DateTime?)))
-                {
-                    converted_value = GetSqlValue((DateTime)Convert
-                                                  .ChangeType(value,
-                                                              typeof(DateTime)));
-                }
+                return convertedValue;
             }
 
-            return converted_value;
+            if (type.Equals(typeof(string)))
+            {
+                convertedValue = GetSqlValue(Convert.ToString(value));
+            }
+            else if (type.Equals(typeof(int)) ||
+                     type.Equals(typeof(int?)) ||
+                     type.Equals(typeof(uint)) ||
+                     type.Equals(typeof(uint?)) ||
+                     type.Equals(typeof(byte)) ||
+                     type.Equals(typeof(byte?)) ||
+                     type.Equals(typeof(sbyte)) ||
+                     type.Equals(typeof(sbyte?)) ||
+                     type.Equals(typeof(short)) ||
+                     type.Equals(typeof(short?)) ||
+                     type.Equals(typeof(ushort)) ||
+                     type.Equals(typeof(ushort?)) ||
+                     type.Equals(typeof(long)) ||
+                     type.Equals(typeof(long?)) ||
+                     type.Equals(typeof(ulong)) ||
+                     type.Equals(typeof(ulong?)))
+            {
+                convertedValue
+                    = GetSqlValue((int)Convert.ChangeType(
+                        value,
+                        typeof(int)));
+            }
+            else if (type.Equals(typeof(decimal)) ||
+                     type.Equals(typeof(decimal?)) ||
+                     type.Equals(typeof(float)) ||
+                     type.Equals(typeof(float?)) ||
+                     type.Equals(typeof(double)) ||
+                     type.Equals(typeof(double?)))
+            {
+                convertedValue
+                    = GetSqlValue((decimal)Convert.ChangeType(
+                        value,
+                        typeof(decimal)));
+            }
+            else if (type.Equals(typeof(DateTime)) ||
+                     type.Equals(typeof(DateTime?)))
+            {
+                convertedValue
+                    = GetSqlValue((DateTime)Convert.ChangeType(
+                        value,
+                        typeof(DateTime)));
+            }
+
+            return convertedValue;
         }
 
         /// <summary>Приведение строкового значения к строке,
@@ -301,7 +323,7 @@ namespace DataEntitiesMapping
         {
             if (value != null)
             {
-                return string.Format("'{0}'", value);
+                return $"'{value}'";
             }
             else
             {
@@ -316,7 +338,7 @@ namespace DataEntitiesMapping
         /// под SQL-запрос,</returns>
         public static string GetSqlValue(int? value)
         {
-            return string.Format("{0}", value);
+            return $"{value}";
         }
 
         /// <summary>Приведение десятичного значения к строке,
@@ -326,7 +348,7 @@ namespace DataEntitiesMapping
         /// под SQL-запрос,</returns>
         public static string GetSqlValue(decimal? value)
         {
-            return string.Format("{0}", value);
+            return $"{value}";
         }
 
         /// <summary>Приведение значения даты и времени к строке,
@@ -338,8 +360,7 @@ namespace DataEntitiesMapping
         {
             if (value.HasValue)
             {
-                return string.Format("'{0:yyyy-MM-dd HH:mm:ss}'",
-                                     value.Value);
+                return $"'{value.Value:yyyy-MM-dd HH:mm:ss}'";
             }
             else
             {

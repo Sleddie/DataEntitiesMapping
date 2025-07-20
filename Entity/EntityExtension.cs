@@ -17,40 +17,49 @@ namespace DataEntitiesMapping.Entity
         /// и свойств класса</param>
         /// <param name="data">Строка таблицы с исходными данными</param>
         /// <returns>Объект с данными</returns>
-        public static EntityType Initialize<EntityType>(this EntityType entity,
-                                                        EntityTableMapping mapping,
-                                                        DataRow data)
+        public static EntityType Initialize<EntityType>(
+            this EntityType entity,
+            EntityTableMapping mapping,
+            DataRow data)
             where EntityType : class
         {
-            if (entity != null && mapping != null && data != null)
+            if (entity == null ||
+                mapping == null ||
+                data == null)
             {
-                PropertyInfo[] properties = EntityTableMapping
-                                            .GetProperties<EntityType>(mapping);
+                return entity;
+            }
 
-                foreach (PropertyInfo property in properties)
+            PropertyInfo[] properties
+                = EntityTableMapping.GetProperties<EntityType>(mapping);
+
+            foreach (PropertyInfo property in properties)
+            {
+                if (property == null)
                 {
-                    if (property != null)
-                    {
-                        object value_to_set = null;
-                        object source_value = EntityTableMapping
-                                              .GetValue(data,
-                                                        mapping[property.Name]);
-
-                        if (source_value != null &&
-                            !Convert.IsDBNull(source_value))
-                        {
-                            Type property_type = Nullable
-                                                 .GetUnderlyingType(property.PropertyType)
-                                                 ?? property.PropertyType;
-                            value_to_set = Convert.ChangeType(source_value,
-                                                              property_type);
-                        }
-
-                        property.SetValue(entity,
-                                          value_to_set,
-                                          null);
-                    }
+                    continue;
                 }
+
+                object valueToSet = null;
+                object sourceValue = EntityTableMapping.GetValue(
+                    data,
+                    mapping[property.Name]);
+
+                if (sourceValue != null &&
+                    !Convert.IsDBNull(sourceValue))
+                {
+                    Type propertyType
+                        = Nullable.GetUnderlyingType(property.PropertyType)
+                        ?? property.PropertyType;
+                    valueToSet = Convert.ChangeType(
+                        sourceValue,
+                        propertyType);
+                }
+
+                property.SetValue(
+                    entity,
+                    valueToSet,
+                    null);
             }
 
             return entity;
@@ -63,41 +72,47 @@ namespace DataEntitiesMapping.Entity
         /// <param name="mapping">Конфигурация сопоставления полей таблицы
         /// и свойств класса</param>
         /// <returns>Объект с данными</returns>
-        public static EntityType Obtain<EntityType>(this DataRow data,
-                                                    EntityTableMapping mapping)
+        public static EntityType Obtain<EntityType>(
+            this DataRow data,
+            EntityTableMapping mapping)
             where EntityType : class, new()
         {
             EntityType entity = new EntityType();
-            return entity.Initialize(mapping, data);
+            return entity.Initialize(
+                mapping,
+                data);
         }
 
         /// <summary>Получение коллекции объектов класса на основе данных
         /// из таблицы</summary>
         /// <typeparam name="EntityType">Тип данных объекта</typeparam>
-        /// <param name="data_source">Таблица с исходными данными</param>
+        /// <param name="dataSource">Таблица с исходными данными</param>
         /// <param name="mapping">Конфигурация сопоставления полей таблицы
         /// и свойств класса</param>
         /// <returns>Коллекция объектов с данными</returns>
-        public static ICollection<EntityType> Obtain<EntityType>(this DataTable data_source,
-                                                                 EntityTableMapping mapping)
+        public static ICollection<EntityType> Obtain<EntityType>(
+            this DataTable dataSource,
+            EntityTableMapping mapping)
             where EntityType : class, new()
         {
-            ICollection<EntityType> result_collection = null;
+            ICollection<EntityType> resultCollection = null;
 
-            if (data_source != null && mapping != null)
+            if (dataSource != null &&
+                mapping != null)
             {
-                result_collection = new List<EntityType>();
+                resultCollection = new List<EntityType>();
 
-                foreach (DataRow row in data_source.Rows)
+                foreach (DataRow row in dataSource.Rows)
                 {
                     if (row != null)
                     {
-                        result_collection.Add(row.Obtain<EntityType>(mapping));
+                        resultCollection.Add(
+                            row.Obtain<EntityType>(mapping));
                     }
                 }
             }
 
-            return result_collection;
+            return resultCollection;
         }
     }
 }

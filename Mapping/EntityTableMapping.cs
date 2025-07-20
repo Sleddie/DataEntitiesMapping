@@ -16,7 +16,7 @@ namespace DataEntitiesMapping
         protected readonly string[] _fields;
         /// <summary>Сведения о конфигурации сопоставления в формате XML
         /// </summary>
-        protected XContainer _table_config;
+        protected XContainer _tableConfig;
 
         /// <summary>Имя таблицы</summary>
         public string Name { get { return _name; } }
@@ -31,37 +31,38 @@ namespace DataEntitiesMapping
         {
             get
             {
-                TryGetField(property, out string field);
+                TryGetField(
+                    property,
+                    out string field);
                 return field;
             }
         }
 
         /// <summary>Конструктор</summary>
-        /// <param name="config_node">Исходные сведения
+        /// <param name="configNode">Исходные сведения
         /// о конфигурации сопоставления в формате XML</param>
-        public EntityTableMapping(XElement config_node)
+        public EntityTableMapping(XElement configNode)
         {
-            _name = Convert.ToString(config_node.Name);
-            _table_config = config_node;
+            _name = Convert.ToString(configNode.Name);
+            _tableConfig = configNode;
+            List<XElement> xmlProperties
+                = new List<XElement>(configNode.Elements());
+            _properties = new string[xmlProperties.Count];
+            _fields = new string[xmlProperties.Count];
 
+            int i = 0;
+            foreach (XElement propertyConfig in xmlProperties)
             {
-                List<XElement> properties_config = new List<XElement>(config_node.Elements());
-                _properties = new string[properties_config.Count];
-                _fields = new string[properties_config.Count];
-
-                int i = 0;
-                foreach (XElement property_config in properties_config)
+                if (propertyConfig != null)
                 {
-                    if (property_config != null)
-                    {
-                        _properties[i] = Convert
-                                         .ToString(property_config.Name);
-                        _fields[i] = property_config.Value;
-                    }
-
-                    i++;
+                    _properties[i]
+                        = Convert.ToString(propertyConfig.Name);
+                    _fields[i] = propertyConfig.Value;
                 }
+
+                i++;
             }
+
         }
 
         /// <summary>Получение имени поля таблицы по имени свойства класса
@@ -71,7 +72,8 @@ namespace DataEntitiesMapping
         /// <returns>true - поля найдено, false - соответствующее поле
         /// не найдено или не существует, передан недопустимый аргумент
         /// или отсутствуют или не инициализированы исходные данные</returns>
-        public bool TryGetField(string property, out string field)
+        public bool TryGetField(string property,
+                                out string field)
         {
             bool obtained = false;
             property = property.Trim();
@@ -81,11 +83,11 @@ namespace DataEntitiesMapping
                 Fields != null &&
                 !string.IsNullOrEmpty(property))
             {
-                int target_index = 0;
+                int targetIndex = 0;
 
-                for (; target_index < Properties.Length; target_index++)
+                for (; targetIndex < Properties.Length; targetIndex++)
                 {
-                    if (Properties[target_index] == property)
+                    if (Properties[targetIndex] == property)
                     {
                         obtained = true;
                         break;
@@ -94,7 +96,7 @@ namespace DataEntitiesMapping
 
                 if (obtained)
                 {
-                    field = Fields[target_index];
+                    field = Fields[targetIndex];
                 }
             }
 

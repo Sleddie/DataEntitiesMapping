@@ -10,9 +10,9 @@ namespace DataEntitiesMapping
     public class Entities
     {
         /// <summary>XML-документ конфигурации</summary>
-        protected XDocument _configs_file;
+        protected XDocument _configsFile;
         /// <summary>Коллекция сущностей из конфгурации</summary>
-        protected SortedList<string, EntityTables> _entities_collection;
+        protected SortedList<string, EntityTables> _entitiesCollection;
 
         /// <summary>Получение сущности по его имени</summary>
         /// <param name="entity">Имя сущности</param>
@@ -21,26 +21,28 @@ namespace DataEntitiesMapping
         {
             get
             {
-                TryGetEntityTables(entity, out EntityTables entity_configs);
-                return entity_configs;
+                TryGetEntityTables(
+                    entity,
+                    out EntityTables entityConfigs);
+                return entityConfigs;
             }
         }
 
         /// <summary>Конструктор по умолчанию</summary>
         protected Entities()
-            : this(DEFAULT_CONFIG_FILE_NAME) { }
+            : this(DefaultConfigFileName) { }
 
         /// <summary>Конструктор конфигурации по имени файла</summary>
-        /// <param name="config_file_name">Имя файла конфигурации</param>
-        public Entities(string config_file_name)
-            : this(XDocument.Load(Path.GetFullPath(config_file_name))) { }
+        /// <param name="configFileName">Имя файла конфигурации</param>
+        public Entities(string configFileName)
+            : this(XDocument.Load(Path.GetFullPath(configFileName))) { }
 
         /// <summary>Конструктор конфигурации по XML-документу</summary>
-        /// <param name="configs_file">XML-документ конфигурации</param>
-        public Entities(XDocument configs_file)
+        /// <param name="configsFile">XML-документ конфигурации</param>
+        public Entities(XDocument configsFile)
         {
-            _configs_file = configs_file;
-            _entities_collection = SetEntitiesCollection(configs_file);
+            _configsFile = configsFile;
+            _entitiesCollection = SetEntitiesCollection(configsFile);
         }
 
         /// <summary>Получение сущности по типу данных</summary>
@@ -53,58 +55,67 @@ namespace DataEntitiesMapping
 
         /// <summary>Получение сущности по типу данных</summary>
         /// <typeparam name="EntityType">Тип данных сущности</typeparam>
-        /// <param name="entity_configs">Объект конфигурации сущности</param>
+        /// <param name="entityConfigs">Объект конфигурации сущности</param>
         /// <returns>true, если объект конфигурации содержит конфигурацию
         /// указанного типа; в противном случае — false</returns>
-        public bool TryGetEntityTables<EntityType>(out EntityTables entity_configs)
+        public bool TryGetEntityTables<EntityType>(
+            out EntityTables entityConfigs)
         {
-            return TryGetEntityTables(Entity<EntityType>.TypeName,
-                                      out entity_configs);
+            return TryGetEntityTables(
+                Entity<EntityType>.TypeName,
+                out entityConfigs);
         }
 
         /// <summary>Получение сущности по типу данных</summary>
         /// <param name="entity">Имя сущности</param>
-        /// <param name="entity_configs">Объект конфигурации сущности</param>
+        /// <param name="entityConfigs">Объект конфигурации сущности</param>
         /// <returns>true, если объект конфигурации содержит конфигурацию
         /// с указанным именем; в противном случае — false</returns>
-        public bool TryGetEntityTables(string entity,
-                                       out EntityTables entity_configs)
+        public bool TryGetEntityTables(
+            string entity,
+            out EntityTables entityConfigs)
         {
-            return _entities_collection.TryGetValue(entity,
-                                                    out entity_configs);
+            return _entitiesCollection.TryGetValue(
+                entity,
+                out entityConfigs);
         }
 
         #region Static
 
         /// <summary>Имя файла конфигурации по умолчанию</summary>
-        public const string DEFAULT_CONFIG_FILE_NAME = "DataEntitiesMapping.config";
+        public const string DefaultConfigFileName
+            = "DataEntitiesMapping.config";
 
         /// <summary>Получение конфигурации по умолчанию</summary>
         public static Entities Default { get { return new Entities(); } }
 
         /// <summary>Получение коллекции сущностей
         /// из XML-документа конфигурации</summary>
-        /// <param name="entities_configs_file">XML-документ конфигурации
+        /// <param name="entitiesConfigsFile">XML-документ конфигурации
         /// </param>
         /// <returns>Коллекция сущностей в виде SortedList</returns>
-        public static SortedList<string, EntityTables> SetEntitiesCollection(XDocument entities_configs_file)
+        public static SortedList<string, EntityTables> SetEntitiesCollection(
+            XDocument entitiesConfigsFile)
         {
-            SortedList<string, EntityTables> configs_collection = null;
-            XElement source_root = entities_configs_file?.Root;
+            SortedList<string, EntityTables> configsCollection = null;
+            XElement sourceRoot = entitiesConfigsFile?.Root;
 
-            if (source_root != null && source_root.HasElements)
+            if (sourceRoot != null &&
+                sourceRoot.HasElements)
             {
-                configs_collection = new SortedList<string, EntityTables>();
+                configsCollection = new SortedList<string, EntityTables>();
 
-                foreach (XElement config_source in source_root.Elements())
+                foreach (XElement configSource in sourceRoot.Elements())
                 {
-                    EntityTables table_config = new EntityTables(config_source);
-                    configs_collection.Add(table_config.Name,
-                                           table_config);
+                    EntityTables tableConfig
+                        = new EntityTables(configSource);
+                    configsCollection.Add(
+                        tableConfig.Name,
+                        tableConfig);
                 }
             }
 
-            return configs_collection;
+            return configsCollection;
         }
 
         #endregion
