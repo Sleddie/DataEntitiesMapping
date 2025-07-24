@@ -10,20 +10,50 @@ namespace DataEntitiesMapping
         /// <param name="dataRecord">Запись таблицы данных</param>
         /// <param name="fieldName">Имя поля</param>
         /// <returns>Значение ячейки как Object</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static object? GetValue(DataRow dataRecord,
+#elif NET35_OR_GREATER
         public static object GetValue(DataRow dataRecord,
+#endif
                                       string fieldName)
         {
-            object target = null;
-
             if (dataRecord != null &&
                 !string.IsNullOrEmpty(fieldName.Trim()) &&
                 dataRecord.Table.Columns.Contains(fieldName))
             {
-                target = dataRecord[fieldName];
+                return dataRecord[fieldName];
             }
 
-            return target;
+            return null;
         }
+
+#if NETCOREAPP3_0_OR_GREATER
+        /// <summary>Получение строкового значения по имени поля из указанной
+        /// записи таблицы</summary>
+        /// <param name="dataRecord">Запись таблицы данных</param>
+        /// <param name="fieldName">Имя поля</param>
+        /// <param name="defaultValue">Значение по умолчанию для случая,
+        /// когда получить значение не удалось</param>
+        /// <returns>Значение ячейки как строка, допускающая null</returns>
+        public static string? GetStringNullableValue(
+            DataRow dataRecord,
+            string fieldName,
+            string? defaultValue = null)
+        {
+            string? convertedValue = defaultValue;
+            object? obtainedValue = GetValue(
+                dataRecord,
+                fieldName);
+
+            if (obtainedValue != null &&
+                !Convert.IsDBNull(obtainedValue))
+            {
+                convertedValue = Convert.ToString(obtainedValue);
+            }
+
+            return convertedValue;
+        }
+#endif
 
         /// <summary>Получение строкового значения по имени поля из указанной
         /// записи таблицы</summary>
@@ -37,14 +67,28 @@ namespace DataEntitiesMapping
                                             string defaultValue = "")
         {
             string convertedValue = defaultValue;
-            object obtainedValue = GetValue(
-                dataRecord,
-                fieldName);
+            var obtainedValue
+#if NETCOREAPP3_0_OR_GREATER
+                = GetStringNullableValue(
+                    dataRecord,
+                    fieldName,
+                    defaultValue);
 
-            if (!Convert.IsDBNull(obtainedValue))
+            if (obtainedValue != null)
+            {
+                convertedValue = obtainedValue;
+            }
+#elif NET35_OR_GREATER
+                = GetValue(
+                    dataRecord,
+                    fieldName);
+
+            if (obtainedValue != null &&
+                !Convert.IsDBNull(obtainedValue))
             {
                 convertedValue = Convert.ToString(obtainedValue);
             }
+#endif
 
             return convertedValue;
         }
@@ -79,7 +123,8 @@ namespace DataEntitiesMapping
         /// <param name="fieldName">Имя поля</param>
         /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
-        /// <returns>Значение ячейки в виде целого числа</returns>
+        /// <returns>Значение ячейки в виде целого числа, допускающего null
+        /// </returns>
         public static int? GetIntegerNullableValue(DataRow dataRecord,
                                                    string fieldName,
                                                    int? defaultValue = null)
@@ -142,7 +187,7 @@ namespace DataEntitiesMapping
         /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
         /// <returns>Значение ячейки в виде десятичного числа
-        /// с плавающей точкой</returns>
+        /// с плавающей точкой, допускающего null</returns>
         public static decimal? GetDecimalNullableValue(
             DataRow dataRecord,
             string fieldName,
@@ -227,7 +272,7 @@ namespace DataEntitiesMapping
         /// <param name="fieldName">Имя поля</param>
         /// <param name="defaultValue">Значение по умолчанию для случая,
         /// когда получить значение не удалось</param>
-        /// <returns>Значение ячейки как DateTime</returns>
+        /// <returns>Значение ячейки как DateTime, допускающий null</returns>
         public static DateTime? GetDateTimeNullableValue(
             DataRow dataRecord,
             string fieldName,
@@ -254,8 +299,13 @@ namespace DataEntitiesMapping
         /// <param name="type">Тип значения</param>
         /// <returns>Строковое представление значения, форматированное
         /// под SQL-запрос,</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static string GetSqlValue(object? value,
+                                         Type type)
+#elif NET35_OR_GREATER
         public static string GetSqlValue(object value,
                                          Type type)
+#endif
         {
             string convertedValue = "null";
 
@@ -264,51 +314,70 @@ namespace DataEntitiesMapping
                 return convertedValue;
             }
 
-            if (type.Equals(typeof(string)))
+            try
             {
-                convertedValue = GetSqlValue(Convert.ToString(value));
+                if (type.Equals(typeof(string)))
+                {
+                    convertedValue = GetSqlValue((string)value);
+                }
+                else if (type.Equals(typeof(byte)) ||
+                         type.Equals(typeof(byte?)) ||
+                         type.Equals(typeof(sbyte)) ||
+                         type.Equals(typeof(sbyte?)) ||
+                         type.Equals(typeof(short)) ||
+                         type.Equals(typeof(short?)) ||
+                         type.Equals(typeof(int)) ||
+                         type.Equals(typeof(int?)))
+                {
+                    convertedValue
+                        = GetSqlValue((int)Convert.ChangeType(
+                            value,
+                            typeof(int)));
+                }
+                else if (type.Equals(typeof(float)) ||
+                         type.Equals(typeof(float?)) ||
+                         type.Equals(typeof(double)) ||
+                         type.Equals(typeof(double?)) ||
+                         type.Equals(typeof(decimal)) ||
+                         type.Equals(typeof(decimal?)))
+                {
+                    convertedValue
+                        = GetSqlValue((decimal)Convert.ChangeType(
+                            value,
+                            typeof(decimal)));
+                }
+                else if (type.Equals(typeof(DateTime)) ||
+                         type.Equals(typeof(DateTime?)))
+                {
+                    convertedValue
+                        = GetSqlValue((DateTime)Convert.ChangeType(
+                            value,
+                            typeof(DateTime)));
+                }
+                else if (type.Equals(typeof(long)) ||
+                         type.Equals(typeof(long?)))
+                {
+                    convertedValue
+                        = GetSqlValue((long)Convert.ChangeType(
+                            value,
+                            typeof(long)));
+                }
+                else if (type.Equals(typeof(ushort)) ||
+                         type.Equals(typeof(ushort?)) ||
+                         type.Equals(typeof(uint)) ||
+                         type.Equals(typeof(uint?)) ||
+                         type.Equals(typeof(ulong)) ||
+                         type.Equals(typeof(ulong?)))
+                {
+                    convertedValue
+                        = GetSqlValue((ulong)Convert.ChangeType(
+                            value,
+                            typeof(ulong)));
+                }
             }
-            else if (type.Equals(typeof(int)) ||
-                     type.Equals(typeof(int?)) ||
-                     type.Equals(typeof(uint)) ||
-                     type.Equals(typeof(uint?)) ||
-                     type.Equals(typeof(byte)) ||
-                     type.Equals(typeof(byte?)) ||
-                     type.Equals(typeof(sbyte)) ||
-                     type.Equals(typeof(sbyte?)) ||
-                     type.Equals(typeof(short)) ||
-                     type.Equals(typeof(short?)) ||
-                     type.Equals(typeof(ushort)) ||
-                     type.Equals(typeof(ushort?)) ||
-                     type.Equals(typeof(long)) ||
-                     type.Equals(typeof(long?)) ||
-                     type.Equals(typeof(ulong)) ||
-                     type.Equals(typeof(ulong?)))
+            catch (Exception)
             {
-                convertedValue
-                    = GetSqlValue((int)Convert.ChangeType(
-                        value,
-                        typeof(int)));
-            }
-            else if (type.Equals(typeof(decimal)) ||
-                     type.Equals(typeof(decimal?)) ||
-                     type.Equals(typeof(float)) ||
-                     type.Equals(typeof(float?)) ||
-                     type.Equals(typeof(double)) ||
-                     type.Equals(typeof(double?)))
-            {
-                convertedValue
-                    = GetSqlValue((decimal)Convert.ChangeType(
-                        value,
-                        typeof(decimal)));
-            }
-            else if (type.Equals(typeof(DateTime)) ||
-                     type.Equals(typeof(DateTime?)))
-            {
-                convertedValue
-                    = GetSqlValue((DateTime)Convert.ChangeType(
-                        value,
-                        typeof(DateTime)));
+                convertedValue = "null";
             }
 
             return convertedValue;
@@ -337,6 +406,26 @@ namespace DataEntitiesMapping
         /// <returns>Строковое представление значения, форматированное
         /// под SQL-запрос,</returns>
         public static string GetSqlValue(int? value)
+        {
+            return $"{value}";
+        }
+
+        /// <summary>Приведение целочисленного значения к строке,
+        /// форматированной под SQL-запрос</summary>
+        /// <param name="value">Исходное целочисленное значение</param>
+        /// <returns>Строковое представление значения, форматированное
+        /// под SQL-запрос,</returns>
+        public static string GetSqlValue(long? value)
+        {
+            return $"{value}";
+        }
+
+        /// <summary>Приведение целочисленного значения к строке,
+        /// форматированной под SQL-запрос</summary>
+        /// <param name="value">Исходное целочисленное значение</param>
+        /// <returns>Строковое представление значения, форматированное
+        /// под SQL-запрос,</returns>
+        public static string GetSqlValue(ulong? value)
         {
             return $"{value}";
         }

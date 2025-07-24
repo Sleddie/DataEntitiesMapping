@@ -16,7 +16,11 @@ namespace DataEntitiesMapping
         /// </summary>
         protected XContainer _entityConfig;
         /// <summary>Набор конфигураций сопоставления</summary>
+#if NETCOREAPP3_0_OR_GREATER
+        protected SortedList<string, EntityTableMapping>? _tablesCollection;
+#elif NET35_OR_GREATER
         protected SortedList<string, EntityTableMapping> _tablesCollection;
+#endif
 
         /// <summary>Имя сущности</summary>
         public string Name { get { return _name; } }
@@ -24,7 +28,11 @@ namespace DataEntitiesMapping
         public string DefaultTable { get { return _defaultTable; } }
         /// <summary>Конфигурация сопоставления для таблицы по умолчанию
         /// </summary>
+#if NETCOREAPP3_0_OR_GREATER
+        public EntityTableMapping? DefaultTableMapping
+#elif NET35_OR_GREATER
         public EntityTableMapping DefaultTableMapping
+#endif
         {
             get { return this[DefaultTable]; }
         }
@@ -32,13 +40,17 @@ namespace DataEntitiesMapping
         /// <param name="table">Имя таблицы</param>
         /// <returns>Объект со сведениями о конфигурации сопоставления
         /// </returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public EntityTableMapping? this[string table]
+#elif NET35_OR_GREATER
         public EntityTableMapping this[string table]
+#endif
         {
             get
             {
                 TryGetTableMapping(
                     table,
-                    out EntityTableMapping tableMapping);
+                    out var tableMapping);
                 return tableMapping;
             }
         }
@@ -48,7 +60,7 @@ namespace DataEntitiesMapping
         /// конфигураций сопоставления в формате XML</param>
         public EntityTables(XElement entityConfigs)
         {
-            _name = Convert.ToString(entityConfigs.Name);
+            _name = entityConfigs.Name.ToString();
             _defaultTable = SetDefaultTable(entityConfigs);
             _entityConfig = entityConfigs;
             _tablesCollection = SetConfigsCollection(entityConfigs);
@@ -60,12 +72,25 @@ namespace DataEntitiesMapping
         /// <param name="tableMapping">Объект со сведениями
         /// о конфигурации сопоставления</param>
         /// <returns></returns>
-        public bool TryGetTableMapping(string table,
-                                       out EntityTableMapping tableMapping)
+        public bool TryGetTableMapping(
+            string table,
+#if NETCOREAPP3_0_OR_GREATER
+            out EntityTableMapping? tableMapping)
+#elif NET35_OR_GREATER
+            out EntityTableMapping tableMapping)
+#endif
         {
-            return _tablesCollection.TryGetValue(
-                table,
-                out tableMapping);
+            tableMapping = null;
+            bool isSuccess = false;
+
+            if (_tablesCollection != null)
+            {
+                isSuccess = _tablesCollection.TryGetValue(
+                    table,
+                    out tableMapping);
+            }
+
+            return isSuccess;
         }
         /// <summary>Получение конфигурации сопоставления для таблицы
         /// по умолчанию</summary>
@@ -73,7 +98,11 @@ namespace DataEntitiesMapping
         /// о конфигурации сопоставления</param>
         /// <returns></returns>
         public bool TryGetDefaultTableMapping(
+#if NETCOREAPP3_0_OR_GREATER
+            out EntityTableMapping? defaultMapping)
+#elif NET35_OR_GREATER
             out EntityTableMapping defaultMapping)
+#endif
         {
             return TryGetTableMapping(
                 DefaultTable,
@@ -90,7 +119,7 @@ namespace DataEntitiesMapping
         public static string SetDefaultTable(XElement entityConfigs)
         {
             string defaultTableName = "";
-            XAttribute defaultTableAttr
+            var defaultTableAttr
                 = entityConfigs.Attribute("default");
 
             if (defaultTableAttr != null)
@@ -106,23 +135,26 @@ namespace DataEntitiesMapping
         /// <param name="configsSource">Исходные сведения о наборе
         /// конфигураций сопоставления в формате XML</param>
         /// <returns>Набор конфигураций сопоставления</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static SortedList<string, EntityTableMapping>? SetConfigsCollection(
+            XElement? configsSource)
+#elif NET35_OR_GREATER
         public static SortedList<string, EntityTableMapping> SetConfigsCollection(
             XElement configsSource)
+#endif
         {
-            SortedList<string, EntityTableMapping> configsCollection = null;
-
             if (configsSource == null ||
                 !configsSource.HasElements)
             {
-                return configsCollection;
+                return null;
             }
 
-            configsCollection
+            var configsCollection
                 = new SortedList<string, EntityTableMapping>();
 
             foreach (XElement configSource in configsSource.Elements())
             {
-                EntityTableMapping tableConfig
+                var tableConfig
                     = new EntityTableMapping(configSource);
                 configsCollection.Add(
                     tableConfig.Name,

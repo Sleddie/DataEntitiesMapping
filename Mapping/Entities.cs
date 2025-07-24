@@ -6,24 +6,32 @@ using DataEntitiesMapping.Entity;
 namespace DataEntitiesMapping
 {
     /// <summary>Класс-контейнер конфигурации сопоставления классов и таблиц
-    /// </summary>                                                                         
+    /// </summary>
     public class Entities
     {
         /// <summary>XML-документ конфигурации</summary>
         protected XDocument _configsFile;
         /// <summary>Коллекция сущностей из конфгурации</summary>
+#if NETCOREAPP3_0_OR_GREATER
+        protected SortedList<string, EntityTables>? _entitiesCollection;
+#elif NET35_OR_GREATER
         protected SortedList<string, EntityTables> _entitiesCollection;
+#endif
 
         /// <summary>Получение сущности по его имени</summary>
         /// <param name="entity">Имя сущности</param>
         /// <returns>Объект конфигурации сущности</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public EntityTables? this[string entity]
+#elif NET35_OR_GREATER
         public EntityTables this[string entity]
+#endif
         {
             get
             {
                 TryGetEntityTables(
                     entity,
-                    out EntityTables entityConfigs);
+                    out var entityConfigs);
                 return entityConfigs;
             }
         }
@@ -48,7 +56,11 @@ namespace DataEntitiesMapping
         /// <summary>Получение сущности по типу данных</summary>
         /// <typeparam name="EntityType">Тип данных сущности</typeparam>
         /// <returns>Объект конфигурации сущности</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public EntityTables? GetEntityTables<EntityType>()
+#elif NET35_OR_GREATER
         public EntityTables GetEntityTables<EntityType>()
+#endif
         {
             return this[Entity<EntityType>.TypeName];
         }
@@ -59,7 +71,11 @@ namespace DataEntitiesMapping
         /// <returns>true, если объект конфигурации содержит конфигурацию
         /// указанного типа; в противном случае — false</returns>
         public bool TryGetEntityTables<EntityType>(
+#if NETCOREAPP3_0_OR_GREATER
+            out EntityTables? entityConfigs)
+#elif NET35_OR_GREATER
             out EntityTables entityConfigs)
+#endif
         {
             return TryGetEntityTables(
                 Entity<EntityType>.TypeName,
@@ -73,11 +89,23 @@ namespace DataEntitiesMapping
         /// с указанным именем; в противном случае — false</returns>
         public bool TryGetEntityTables(
             string entity,
+#if NETCOREAPP3_0_OR_GREATER
+            out EntityTables? entityConfigs)
+#elif NET35_OR_GREATER
             out EntityTables entityConfigs)
+#endif
         {
-            return _entitiesCollection.TryGetValue(
-                entity,
-                out entityConfigs);
+            entityConfigs = null;
+            bool isSuccess = false;
+
+            if (_entitiesCollection != null)
+            {
+                isSuccess = _entitiesCollection.TryGetValue(
+                    entity,
+                    out entityConfigs);
+            }
+
+            return isSuccess;
         }
 
         #region Static
@@ -94,25 +122,31 @@ namespace DataEntitiesMapping
         /// <param name="entitiesConfigsFile">XML-документ конфигурации
         /// </param>
         /// <returns>Коллекция сущностей в виде SortedList</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static SortedList<string, EntityTables>? SetEntitiesCollection(
+            XDocument? entitiesConfigsFile)
+#elif NET35_OR_GREATER
         public static SortedList<string, EntityTables> SetEntitiesCollection(
             XDocument entitiesConfigsFile)
+#endif
         {
-            SortedList<string, EntityTables> configsCollection = null;
-            XElement sourceRoot = entitiesConfigsFile?.Root;
+            var sourceRoot = entitiesConfigsFile?.Root;
 
-            if (sourceRoot != null &&
-                sourceRoot.HasElements)
+            if (sourceRoot == null ||
+                !sourceRoot.HasElements)
             {
-                configsCollection = new SortedList<string, EntityTables>();
+                return null;
+            }
 
-                foreach (XElement configSource in sourceRoot.Elements())
-                {
-                    EntityTables tableConfig
-                        = new EntityTables(configSource);
-                    configsCollection.Add(
-                        tableConfig.Name,
-                        tableConfig);
-                }
+            var configsCollection = new SortedList<string, EntityTables>();
+
+            foreach (XElement configSource in sourceRoot.Elements())
+            {
+                var tableConfig
+                    = new EntityTables(configSource);
+                configsCollection.Add(
+                    tableConfig.Name,
+                    tableConfig);
             }
 
             return configsCollection;

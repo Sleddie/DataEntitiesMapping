@@ -43,9 +43,9 @@ namespace DataEntitiesMapping
         /// о конфигурации сопоставления в формате XML</param>
         public EntityTableMapping(XElement configNode)
         {
-            _name = Convert.ToString(configNode.Name);
+            _name = configNode.Name.ToString();
             _tableConfig = configNode;
-            List<XElement> xmlProperties
+            var xmlProperties
                 = new List<XElement>(configNode.Elements());
             _properties = new string[xmlProperties.Count];
             _fields = new string[xmlProperties.Count];
@@ -56,8 +56,8 @@ namespace DataEntitiesMapping
                 if (propertyConfig != null)
                 {
                     _properties[i]
-                        = Convert.ToString(propertyConfig.Name);
-                    _fields[i] = propertyConfig.Value;
+                        = propertyConfig.Name.ToString().Trim();
+                    _fields[i] = propertyConfig.Value.Trim();
                 }
 
                 i++;

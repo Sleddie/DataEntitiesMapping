@@ -17,10 +17,17 @@ namespace DataEntitiesMapping.Entity
         /// и свойств класса</param>
         /// <param name="data">Строка таблицы с исходными данными</param>
         /// <returns>Объект с данными</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static EntityType? Initialize<EntityType>(
+            this EntityType? entity,
+            EntityTableMapping? mapping,
+            DataRow? data)
+#elif NET35_OR_GREATER
         public static EntityType Initialize<EntityType>(
             this EntityType entity,
             EntityTableMapping mapping,
             DataRow data)
+#endif
             where EntityType : class
         {
             if (entity == null ||
@@ -40,26 +47,30 @@ namespace DataEntitiesMapping.Entity
                     continue;
                 }
 
-                object valueToSet = null;
-                object sourceValue = EntityTableMapping.GetValue(
-                    data,
-                    mapping[property.Name]);
-
-                if (sourceValue != null &&
-                    !Convert.IsDBNull(sourceValue))
+                try
                 {
+                    var sourceValue = EntityTableMapping.GetValue(
+                        data,
+                        mapping[property.Name]);
+
+                    if (sourceValue == null ||
+                        Convert.IsDBNull(sourceValue))
+                    {
+                        continue;
+                    }
+
                     Type propertyType
                         = Nullable.GetUnderlyingType(property.PropertyType)
                         ?? property.PropertyType;
-                    valueToSet = Convert.ChangeType(
+                    object valueToSet = Convert.ChangeType(
                         sourceValue,
                         propertyType);
+                    property.SetValue(
+                        entity,
+                        valueToSet,
+                        null);
                 }
-
-                property.SetValue(
-                    entity,
-                    valueToSet,
-                    null);
+                catch { }
             }
 
             return entity;
@@ -72,12 +83,18 @@ namespace DataEntitiesMapping.Entity
         /// <param name="mapping">Конфигурация сопоставления полей таблицы
         /// и свойств класса</param>
         /// <returns>Объект с данными</returns>
+#if NETCOREAPP3_0_OR_GREATER
+        public static EntityType? Obtain<EntityType>(
+            this DataRow? data,
+            EntityTableMapping? mapping)
+#elif NET35_OR_GREATER
         public static EntityType Obtain<EntityType>(
             this DataRow data,
             EntityTableMapping mapping)
+#endif
             where EntityType : class, new()
         {
-            EntityType entity = new EntityType();
+            var entity = new EntityType();
             return entity.Initialize(
                 mapping,
                 data);
@@ -95,19 +112,23 @@ namespace DataEntitiesMapping.Entity
             EntityTableMapping mapping)
             where EntityType : class, new()
         {
-            ICollection<EntityType> resultCollection = null;
+            var resultCollection = new List<EntityType>();
 
             if (dataSource != null &&
+                dataSource.Rows != null &&
+                dataSource.Rows.Count > 0 &&
                 mapping != null)
             {
-                resultCollection = new List<EntityType>();
-
                 foreach (DataRow row in dataSource.Rows)
                 {
                     if (row != null)
                     {
-                        resultCollection.Add(
-                            row.Obtain<EntityType>(mapping));
+                        var entity = row.Obtain<EntityType>(mapping);
+
+                        if (entity != null)
+                        {
+                            resultCollection.Add(entity);
+                        }
                     }
                 }
             }

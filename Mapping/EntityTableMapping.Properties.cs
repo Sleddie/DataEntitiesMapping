@@ -21,8 +21,15 @@ namespace DataEntitiesMapping
 
             for (int i = 0; i < mapping.Properties.Length; i++)
             {
-                PropertyInfo propToCheck
-                    = dataType.GetProperty(mapping.Properties[i]);
+                var propName = mapping.Properties[i];
+
+                if (string.IsNullOrEmpty(propName))
+                {
+                    continue;
+                }
+
+                var propToCheck
+                    = dataType.GetProperty(propName);
 
                 if (propToCheck != null &&
                     propToCheck.CanRead &&
@@ -36,28 +43,16 @@ namespace DataEntitiesMapping
         }
 
         /// <summary>Получение имён полей таблицы базы данных</summary>
-        /// <typeparam name="DataType">Класс данных</typeparam>
         /// <param name="dataTypeProps">Свойства класса данных,
         /// к которым требуется получить соответствующие поля таблицы</param>
         /// <param name="mapping">Конфигурация сопоставления свойств
         /// с полями таблицы базы данных</param>
-        /// <param name="item">Экземпляр класса данных</param>
         /// <returns>Массив строк с именами полей таблицы базы данных</returns>
-        public static string[] GetFields<DataType>(
+        public static string[] GetFields(
             PropertyInfo[] dataTypeProps,
-            EntityTableMapping mapping,
-            DataType item)
-            where DataType : class
+            EntityTableMapping mapping)
         {
-            string[] fields = null;
-
-            if (dataTypeProps == null ||
-                dataTypeProps.Length == 0)
-            {
-                return fields;
-            }
-
-            fields = new string[dataTypeProps.Length];
+            string[] fields = new string[dataTypeProps.Length];
 
             for (int i = 0; i < fields.Length; i++)
             {
@@ -65,6 +60,68 @@ namespace DataEntitiesMapping
             }
 
             return fields;
+        }
+
+        /// <summary>Получение имён полей таблицы базы данных</summary>
+        /// <typeparam name="DataType">Класс данных</typeparam>
+        /// <param name="dataTypeProps">Свойства класса данных,
+        /// к которым требуется получить соответствующие поля таблицы</param>
+        /// <param name="mapping">Конфигурация сопоставления свойств
+        /// с полями таблицы базы данных</param>
+        /// <param name="item">Экземпляр класса данных</param>
+        /// <returns>Массив строк с именами полей таблицы базы данных</returns>
+        [Obsolete("Рекомендуется вызывать метод GetFields(" +
+            "PropertyInfo[] dataTypeProps, EntityTableMapping mapping)")]
+#if NETCOREAPP3_0_OR_GREATER
+        public static string[]? GetFields<DataType>(
+            PropertyInfo[]? dataTypeProps,
+            EntityTableMapping mapping,
+            DataType? item = null)
+#elif NET35_OR_GREATER
+        public static string[] GetFields<DataType>(
+            PropertyInfo[] dataTypeProps,
+            EntityTableMapping mapping,
+            DataType item)
+#endif
+            where DataType : class
+        {
+            if (dataTypeProps == null)
+            {
+                return null;
+            }
+
+            return GetFields(
+                dataTypeProps,
+                mapping);
+        }
+
+        /// <summary>Получение форматированных под SQL-запрос значений
+        /// свойств экземпляра класса данных</summary>
+        /// <typeparam name="DataType">Класс данных</typeparam>
+        /// <param name="dataTypeProps">Свойства класса данных,
+        /// значения которых требуется получить</param>
+        /// <param name="item">Экземпляр класса данных</param>
+        /// <returns>Массив строк с форматированными под SQL-запрос
+        /// значениями свойств</returns>
+        public static string[] GetValues<DataType>(
+            PropertyInfo[] dataTypeProps,
+            DataType item)
+            where DataType : class
+        {
+            var values = new string[dataTypeProps.Length];
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                PropertyInfo currentProp = dataTypeProps[i];
+                var propValue = currentProp.GetValue(
+                    item,
+                    null);
+                values[i] = GetSqlValue(
+                    propValue,
+                    currentProp.PropertyType);
+            }
+
+            return values;
         }
 
         /// <summary>Получение форматированных под SQL-запрос значений
@@ -76,34 +133,29 @@ namespace DataEntitiesMapping
         /// <param name="item">Экземпляр класса данных</param>
         /// <returns>Массив строк с форматированными под SQL-запрос
         /// значениями свойств</returns>
-        public static string[] GetValues<DataType>(
-            PropertyInfo[] dataTypeProps,
-            EntityTableMapping mapping,
+        [Obsolete("Рекомендуется вызывать метод GetValues<DataType>(" +
+            "PropertyInfo[] dataTypeProps, DataType item)")]
+#if NETCOREAPP3_0_OR_GREATER
+        public static string[]? GetValues<DataType>(
+            PropertyInfo[]? dataTypeProps,
+            EntityTableMapping? mapping,
             DataType item)
-            where DataType : class
+#elif NET35_OR_GREATER
+        public static string[] GetValues<DataType>(
+        PropertyInfo[] dataTypeProps,
+        EntityTableMapping mapping,
+        DataType item)
+#endif
+        where DataType : class
         {
-            string[] values = null;
-
-            if (dataTypeProps == null ||
-                dataTypeProps.Length == 0)
+            if (dataTypeProps == null)
             {
-                return values;
+                return null;
             }
 
-            values = new string[dataTypeProps.Length];
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                PropertyInfo currentProp = dataTypeProps[i];
-                object propValue = currentProp.GetValue(
-                    item,
-                    null);
-                values[i] = GetSqlValue(
-                    propValue,
-                    currentProp.PropertyType);
-            }
-
-            return values;
+            return GetValues(
+                dataTypeProps,
+                item);
         }
     }
 }

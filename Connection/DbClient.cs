@@ -24,48 +24,44 @@ namespace DataEntitiesMapping.Connection
             this IDbConnection connection,
             EntityTableMapping mapping,
             string query,
+#if NETCOREAPP3_0_OR_GREATER
+            out ICollection<EntityType>? resultCollection,
+#elif NET35_OR_GREATER
             out ICollection<EntityType> resultCollection,
+#endif
             out string message)
             where EntityType : class, new()
         {
             resultCollection = null;
-            bool isCorrect = false;
 
             if (connection == null ||
                 mapping == null)
             {
                 message = "Нет сведений о подключении к базе данных или " +
                           "о конфигурации соответствия сущности и класса!";
-                return isCorrect;
+                return false;
             }
 
-            DataTable receivedData = null;
-
-            if (!string.IsNullOrEmpty(query))
-            {
-                receivedData = connection.SelectByQuery(
-                    query,
-                    out message);
-            }
-            else
+            if (string.IsNullOrEmpty(query))
             {
                 message = "Не заданы условия поиска!";
+                return false;
             }
 
-            if (receivedData != null)
+            var receivedData = connection.SelectByQuery(
+                query,
+                out message);
+
+            resultCollection
+                = receivedData.Obtain<EntityType>(mapping);
+
+            if (resultCollection == null ||
+                resultCollection.Count <= 0)
             {
-                resultCollection
-                    = receivedData.Obtain<EntityType>(mapping);
-                isCorrect = resultCollection != null;
-
-                if (resultCollection == null ||
-                    resultCollection.Count <= 0)
-                {
-                    message = "Нет данных.";
-                }
+                message = "Нет данных.";
             }
 
-            return isCorrect;
+            return resultCollection != null;
         }
 
         /// <summary>Получение данных из указанной таблицы с указанным
@@ -80,10 +76,11 @@ namespace DataEntitiesMapping.Connection
         /// <param name="message">Сообщение</param>
         /// <returns>true - запрос данных прошёл без ошибок, false -
         /// произошла ошибка или передан недопустимый параметр</returns>
-        public static DataTable SelectAll(this IDbConnection connection,
-                                          string from,
-                                          string condition,
-                                          out string message)
+        public static DataTable SelectAll(
+            this IDbConnection connection,
+            string from,
+            string condition,
+            out string message)
         {
             return Select(
                 connection,
@@ -106,13 +103,14 @@ namespace DataEntitiesMapping.Connection
         /// <param name="message">Сообщение</param>
         /// <returns>true - запрос данных прошёл без ошибок, false -
         /// произошла ошибка или передан недопустимый параметр</returns>
-        public static DataTable Select(this IDbConnection connection,
-                                       string paramSet,
-                                       string from,
-                                       string condition,
-                                       out string message)
+        public static DataTable Select(
+            this IDbConnection connection,
+            string paramSet,
+            string from,
+            string condition,
+            out string message)
         {
-            DataTable receivedData = null;
+            var receivedData = new DataTable();
             string query = GetSelectQuery(
                 from,
                 paramSet: paramSet,
@@ -139,11 +137,12 @@ namespace DataEntitiesMapping.Connection
         /// <param name="message">Сообщение</param>
         /// <returns>true - запрос данных прошёл без ошибок, false -
         /// произошла ошибка или передан недопустимый параметр</returns>
-        public static DataTable SelectByQuery(this IDbConnection connection,
-                                              string query,
-                                              out string message)
+        public static DataTable SelectByQuery(
+            this IDbConnection connection,
+            string query,
+            out string message)
         {
-            DataTable receivedData = null;
+            var receivedData = new DataTable();
             message = "";
 
             if (connection == null)
@@ -152,14 +151,16 @@ namespace DataEntitiesMapping.Connection
                 return receivedData;
             }
 
-            receivedData = new DataTable();
-            IDbCommand cmd = null;
+            //receivedData = new DataTable();
+            IDbCommand cmd = connection.CreateCommand();
+#if NETCOREAPP3_0_OR_GREATER
+            IDataReader? reader = null;
+#elif NET35_OR_GREATER
             IDataReader reader = null;
+#endif
 
             try
             {
-                cmd = connection.CreateCommand();
-
                 if (cmd == null)
                 {
                     message = "Не удалось создать команду!";
@@ -179,7 +180,7 @@ namespace DataEntitiesMapping.Connection
             }
             catch (Exception ex)
             {
-                receivedData = null;
+                receivedData.Clear();
                 message = $"Произошла ошибка!\r\n{ex.Message}";
             }
             finally
@@ -207,11 +208,12 @@ namespace DataEntitiesMapping.Connection
         /// являющаяся частью запроса SELECT и идущая после слова WHERE)
         /// </param>
         /// <returns>Текст запроса</returns>
-        public static string GetSelectQuery(string from,
-                                            string paramSet = "*",
-                                            string condition = "")
+        public static string GetSelectQuery(
+            string from,
+            string paramSet = "*",
+            string condition = "")
         {
-            string query = null;
+            string query = "";
 
             if (string.IsNullOrEmpty(from.Trim()))
             {
@@ -241,8 +243,9 @@ namespace DataEntitiesMapping.Connection
         /// являющаяся частью запроса SELECT и идущая после слова WHERE)
         /// </param>
         /// <returns>Текст запроса</returns>
-        public static string GetSelectCountQuery(string from,
-                                                 string condition = "")
+        public static string GetSelectCountQuery(
+            string from,
+            string condition = "")
         {
             return GetSelectQuery(
                 from,
