@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
     <NeutralLanguage>ru-RU</NeutralLanguage>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
     <Copyright>Copyright © 2025</Copyright>
     <Description>Библиотека для упрощённого преобразования данных из БД в объекты классов</Description>
     <Company>BlueYellow</Company>
