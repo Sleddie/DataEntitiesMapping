@@ -1,6 +1,6 @@
 # DataEntitiesMapping
 
-The project of **classes library** for data-to-object mapping using XML-syntaxbased on XML configuration of properties-to-fields matching.
+The project of **classes library** for data-to-object mapping based on XML configuration of properties-to-fields matching.
 The project has two target platforms configured:
 * .NET Framework 3.5 (legacy);
 * .NET 8.0
